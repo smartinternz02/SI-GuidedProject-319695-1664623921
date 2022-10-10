@@ -1,0 +1,68 @@
+#importing the libraries
+import pandas as pd
+import numpy as np
+import sklearn
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.ensemble import RandomForestRegressor
+import xgboost as xgb
+import lightgbm as lgb
+#load the dataset
+df = pd.read_csv(r"C:\Users\HP\Downloads\Temparature\Regression\Dataset\data.csv")
+#displaying the first five rows
+df.head()
+df.info()
+df.describe()
+df.isnull().sum()
+## univariate analysis
+plt.figure(figsize =(10,5))
+sns.histplot(data = df, x='Indoor_temperature_room',)
+## bi variate analysis
+
+plt.figure(figsize =(10,5))
+sns.scatterplot(data = df, x = 'Relative_humidity_room', y = 'Relative_humidity_(dinning-room)')
+## multivariate analysis
+plt.figure(figsize =(10,5))
+sns.scatterplot(data = df, x = 'CO2_room', y = 'Relative_humidity_(dinning-room)', hue='Indoor_temperature_room')
+
+df.corr()
+plt.figure(figsize =(12,10))
+sns.heatmap(df.corr(), annot = True)
+df.drop(['Date','Time','CO2_(dinning-room)', 'Relative_humidity_(dinning-room)','Lighting_(dinning-room)', 'Meteo_Sun_dusk','Meteo_Sun_light_in_east_facade','Meteo_Sun_light_in_south_facade', 'Meteo_Sun_irradiance','Day_of_the_week'], axis = 1,inplace = True)
+df
+sns.pairplot(df)
+x = df.drop('Indoor_temperature_room', axis = 1)
+x
+y = df['Indoor_temperature_room']
+y
+from sklearn.model_selection import train_test_split
+x_train,x_test,y_train,y_test = train_test_split(x,y,test_size=0.3,random_state=1)
+x_train
+x_test
+y_train
+y_test
+rf = RandomForestRegressor()
+rf.fit(x_train,y_train)
+pred = rf.predict(x_test)
+pred
+from sklearn.metrics import r2_score
+r2_score(y_test,pred)
+from sklearn.preprocessing import StandardScaler
+sc = StandardScaler()
+x_train_scaled = sc.fit_transform(x_train)
+x_test_scaled = sc.transform(x_test)
+from sklearn.linear_model import LinearRegression
+lir  = LinearRegression()
+lir.fit(x_train_scaled,y_train)
+pred = lir.predict(x_test_scaled)
+r2_score(pred,y_test)
+xg = xgb.XGBRegressor()
+xg.fit(x_train,y_train)
+pred = xg.predict(x_test)
+r2_score(y_test,pred)
+lg = lgb.LGBMRegressor()
+lg.fit(x_train,y_train)
+pred = lg.predict(x_test)
+r2_score(y_test,pred)
+import pickle
+pickle.dump(rf,open('temperature.pkl','wb'))
